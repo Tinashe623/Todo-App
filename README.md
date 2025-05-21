@@ -18,4 +18,4 @@ This is a modern **React-based To-Do List app**, featuring:
 ## 🚀 Installation
 1. Clone the repository:
    ```bash
-   git clone <your-repo-link>
+    git clone https://github.com/Tinashe623/Todo-App.git
