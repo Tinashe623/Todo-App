@@ -30,6 +30,7 @@ const TaskItem = ({
       <button 
         className={`icon-btn check ${task.completed ? 'completed-btn' : ''}`}
         onClick={() => toggleComplete(task.id)}
+        aria-label={task.completed ? "Mark task as incomplete" : "Mark task as complete"}
       >
         <CheckCircleIcon className="icon" />
       </button>
@@ -71,10 +72,10 @@ const TaskItem = ({
           </>
         ) : (
           <>
-            <button className="icon-btn" onClick={() => startEditing(task)}><PencilSquareIcon className="icon" /></button>
-            <button className="icon-btn" onClick={() => moveTask(index, 'up')} disabled={index === 0}><ChevronUpIcon className="icon" /></button>
-            <button className="icon-btn" onClick={() => moveTask(index, 'down')} disabled={index === filteredTasksLength - 1}><ChevronDownIcon className="icon" /></button>
-            <button className="icon-btn delete" onClick={() => deleteTask(task.id)}><TrashIcon className="icon" /></button>
+            <button className="icon-btn" onClick={() => startEditing(task)} aria-label="Edit task"><PencilSquareIcon className="icon" /></button>
+            <button className="icon-btn" onClick={() => moveTask(index, 'up')} disabled={index === 0} aria-label="Move task up"><ChevronUpIcon className="icon" /></button>
+            <button className="icon-btn" onClick={() => moveTask(index, 'down')} disabled={index === filteredTasksLength - 1} aria-label="Move task down"><ChevronDownIcon className="icon" /></button>
+            <button className="icon-btn delete" onClick={() => deleteTask(task.id)} aria-label="Delete task"><TrashIcon className="icon" /></button>
           </>
         )}
       </div>

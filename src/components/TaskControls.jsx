@@ -24,6 +24,7 @@ const TaskControls = ({
           placeholder="Search tasks..." 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          aria-label="Search through your tasks"
         />
       </div>
 
@@ -36,12 +37,14 @@ const TaskControls = ({
             placeholder="Add a new task..."
             onChange={(e) => setNewTask(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addTask()}
+            aria-label="New task description"
           />
         </div>
         <select 
           className="cat-select"
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
+          aria-label="Select task category"
         >
           {categories.filter(c => c !== "All").map(cat => (
             <option key={cat} value={cat}>{cat}</option>
@@ -52,6 +55,7 @@ const TaskControls = ({
           className="date-input" 
           value={newDueDate}
           onChange={(e) => setNewDueDate(e.target.value)}
+          aria-label="Task due date"
         />
         <button className="add-btn" onClick={addTask}>Add</button>
       </div>

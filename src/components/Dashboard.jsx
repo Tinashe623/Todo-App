@@ -11,9 +11,9 @@ const Dashboard = ({ stats, darkMode, setDarkMode }) => {
           <p>{stats.completed} / {stats.total} tasks completed</p>
         </div>
         <button 
-          className="toggle-btn" 
+          className="theme-toggle" 
           onClick={() => setDarkMode(!darkMode)}
-          title="Toggle Theme"
+          aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
         >
           {darkMode ? <SunIcon className="icon" /> : <MoonIcon className="icon" />}
         </button>
