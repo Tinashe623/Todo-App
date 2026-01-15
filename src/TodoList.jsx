@@ -1,42 +1,77 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TrashIcon,
   ChevronUpIcon,
   ChevronDownIcon,
-} from "@heroicons/react/24/solid";
+  SunIcon,
+  MoonIcon,
+  CheckCircleIcon
+} from "@heroicons/react/24/outline";
 
 const TodoList = () => {
-  const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState("");
-  const [darkMode, setDarkMode] = useState(false);
+  // Initialize state from localStorage
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem("tasks");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  });
 
-  // Handle input change
+  const [newTask, setNewTask] = useState("");
+  
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
+
+  // Sync tasks to localStorage
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+  // Sync theme to body class and localStorage
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add("dark-mode");
+      document.body.classList.remove("light-mode");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.body.classList.add("light-mode");
+      document.body.classList.remove("dark-mode");
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
+
   const handleInputChange = (event) => {
     setNewTask(event.target.value);
   };
 
-  // Add task when button is clicked or Enter key is pressed
   const addTask = () => {
     if (newTask.trim() !== "") {
-      setTasks((prevTasks) => [...prevTasks, newTask]);
+      const taskObj = {
+        id: crypto.randomUUID(),
+        text: newTask,
+        completed: false
+      };
+      setTasks((prevTasks) => [...prevTasks, taskObj]);
       setNewTask("");
     }
   };
 
-  // Detect Enter key press inside input field
   const handleKeyPress = (event) => {
     if (event.key === "Enter") {
       addTask();
     }
   };
 
-  // Delete task
-  const deleteTask = (index) => {
-    const updatedTasks = tasks.filter((_, i) => i !== index);
-    setTasks(updatedTasks);
+  const deleteTask = (id) => {
+    setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  // Move task up
   const moveTaskUp = (index) => {
     if (index > 0) {
       const updatedTasks = [...tasks];
@@ -48,7 +83,6 @@ const TodoList = () => {
     }
   };
 
-  // Move task down
   const moveTaskDown = (index) => {
     if (index === tasks.length - 1) return;
     const updatedTasks = [...tasks];
@@ -59,22 +93,34 @@ const TodoList = () => {
     setTasks(updatedTasks);
   };
 
-  return (
-    <main className={`to-do-list ${darkMode ? "dark-mode" : "light-mode"}`}>
-      <h1>To-Do List</h1>
+  const toggleComplete = (id) => {
+    setTasks(tasks.map(task => 
+      task.id === id ? { ...task, completed: !task.completed } : task
+    ));
+  };
 
-      {/* Toggle Button */}
-      <button className="toggle-btn" onClick={() => setDarkMode(!darkMode)}>
-        {darkMode ? "Switch to Light Mode 🌞" : "Switch to Dark Mode 🌙"}
-      </button>
+  return (
+    <main className="to-do-list">
+      <div className="toggle-container">
+        <button 
+          className="toggle-btn" 
+          onClick={() => setDarkMode(!darkMode)}
+          title="Toggle Theme"
+        >
+          {darkMode ? <SunIcon className="icon" /> : <MoonIcon className="icon" />}
+        </button>
+      </div>
+
+      <h1>Today's Tasks</h1>
 
       <section>
         <input
           type="text"
           value={newTask}
-          placeholder="Enter a task ..."
+          placeholder="What needs to be done?"
           onChange={handleInputChange}
-          onKeyDown={handleKeyPress} // ✅ Captures Enter key press
+          onKeyDown={handleKeyPress}
+          autoFocus
         />
         <button className="add-btn" onClick={addTask}>
           Add
@@ -83,22 +129,51 @@ const TodoList = () => {
 
       <ol>
         {tasks.map((task, index) => (
-          <li key={index}>
-            <span className="text">{task}</span>
-
-            <button className="move-btn" onClick={() => moveTaskUp(index)}>
-              <ChevronUpIcon className="icon" />
+          <li key={task.id}>
+            <button 
+              className={`icon-btn ${task.completed ? 'completed-btn' : ''}`}
+              onClick={() => toggleComplete(task.id)}
+            >
+              <CheckCircleIcon className={`icon ${task.completed ? 'text-green-500' : ''}`} />
             </button>
 
-            <button className="move-btn" onClick={() => moveTaskDown(index)}>
-              <ChevronDownIcon className="icon" />
-            </button>
+            <span 
+              className={`text ${task.completed ? "completed" : ""}`}
+              onClick={() => toggleComplete(task.id)}
+            >
+              {task.text}
+            </span>
 
-            <button className="delete-btn" onClick={() => deleteTask(index)}>
-              <TrashIcon className="icon" />
-            </button>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button 
+                className="icon-btn" 
+                onClick={() => moveTaskUp(index)}
+                disabled={index === 0}
+                style={{ opacity: index === 0 ? 0.3 : 1 }}
+              >
+                <ChevronUpIcon className="icon" />
+              </button>
+
+              <button 
+                className="icon-btn" 
+                onClick={() => moveTaskDown(index)}
+                disabled={index === tasks.length - 1}
+                style={{ opacity: index === tasks.length - 1 ? 0.3 : 1 }}
+              >
+                <ChevronDownIcon className="icon" />
+              </button>
+
+              <button className="icon-btn delete" onClick={() => deleteTask(task.id)}>
+                <TrashIcon className="icon" />
+              </button>
+            </div>
           </li>
         ))}
+        {tasks.length === 0 && (
+          <p style={{ textAlign: 'center', opacity: 0.5, marginTop: '20px' }}>
+            No tasks yet. Add one above!
+          </p>
+        )}
       </ol>
     </main>
   );
