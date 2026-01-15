@@ -1,4 +1,5 @@
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import "./TaskControls.css";
 
 const TaskControls = ({ 
   searchQuery, 

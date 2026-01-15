@@ -1,5 +1,7 @@
 import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 
+import "./Dashboard.css";
+
 const Dashboard = ({ stats, darkMode, setDarkMode }) => {
   return (
     <div className="dashboard">

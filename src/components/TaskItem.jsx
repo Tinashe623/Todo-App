@@ -8,6 +8,7 @@ import {
   XMarkIcon, 
   CheckIcon 
 } from "@heroicons/react/24/outline";
+import "./TaskItem.css";
 
 const TaskItem = ({ 
   task, 
