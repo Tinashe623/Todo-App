@@ -161,7 +161,14 @@ const TodoList = () => {
         addTask={addTask}
         categories={CATEGORIES}
         filterCategory={filterCategory}
-        setFilterCategory={setFilterCategory}
+        setFilterCategory={(cat) => {
+          setFilterCategory(cat);
+          // Smart Sync: If we filter by a specific category, 
+          // default new tasks to that category too.
+          if (cat !== "All") {
+            setNewCategory(cat);
+          }
+        }}
       />
 
       <ol ref={listRef}>

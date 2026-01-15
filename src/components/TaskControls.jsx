@@ -26,10 +26,11 @@ const TaskControls = ({
         />
       </div>
 
-      <div className="add-section">
+      <div className={`add-section ${newCategory.toLowerCase()}`}>
         <div className="input-wrapper">
           <input
             type="text"
+            className="task-input"
             value={newTask}
             placeholder="Add a new task..."
             onChange={(e) => setNewTask(e.target.value)}
@@ -47,7 +48,7 @@ const TaskControls = ({
         </select>
         <input 
           type="date" 
-          className="cat-select" 
+          className="date-input" 
           value={newDueDate}
           onChange={(e) => setNewDueDate(e.target.value)}
         />
@@ -58,7 +59,7 @@ const TaskControls = ({
         {categories.map(cat => (
           <button
             key={cat}
-            className={`filter-pill ${filterCategory === cat ? 'active' : ''}`}
+            className={`filter-pill ${cat.toLowerCase()} ${filterCategory === cat ? 'active' : ''}`}
             onClick={() => setFilterCategory(cat)}
           >
             {cat}
