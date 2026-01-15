@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Dashboard from "./components/Dashboard";
 import TaskControls from "./components/TaskControls";
 import TaskItem from "./components/TaskItem";
@@ -33,10 +33,29 @@ const TodoList = () => {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
 
+  // Refs for auto-scroll logic
+  const listRef = useRef(null);
+  const scrollAnchorRef = useRef(null);
+  const previousLengthRef = useRef(tasks.length);
+
   // --- Effects ---
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
+
+  // Robust Auto-Scroll: When a task is added, scroll the latest task into view.
+  useEffect(() => {
+    if (tasks.length > previousLengthRef.current) {
+      // Use requestAnimationFrame to ensure the DOM has rendered the new item
+      requestAnimationFrame(() => {
+        scrollAnchorRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "end"
+        });
+      });
+    }
+    previousLengthRef.current = tasks.length;
+  }, [tasks.length]);
 
   useEffect(() => {
     if (darkMode) {
@@ -61,7 +80,9 @@ const TodoList = () => {
         dueDate: newDueDate || null,
         createdAt: new Date().toISOString()
       };
-      setTasks((prev) => [taskObj, ...prev]);
+      // Append new tasks to the end so scrolling to the bottom
+      // reveals the newly added task.
+      setTasks((prev) => [...prev, taskObj]);
       setNewTask("");
       setNewDueDate("");
     }
@@ -143,7 +164,7 @@ const TodoList = () => {
         setFilterCategory={setFilterCategory}
       />
 
-      <ol>
+      <ol ref={listRef}>
         {filteredTasks.map((task, index) => (
           <TaskItem 
             key={task.id}
@@ -167,6 +188,8 @@ const TodoList = () => {
             <p>No tasks found.</p>
           </div>
         )}
+        {/* Scroll Anchor: Hidden element to scroll to */}
+        <div ref={scrollAnchorRef} style={{ height: '1px' }} aria-hidden="true" />
       </ol>
     </main>
   );
