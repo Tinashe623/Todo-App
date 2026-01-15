@@ -1,15 +1,12 @@
-import { useState, useEffect } from "react";
-import {
-  TrashIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-  SunIcon,
-  MoonIcon,
-  CheckCircleIcon
-} from "@heroicons/react/24/outline";
+import { useState, useEffect, useMemo } from "react";
+import Dashboard from "./components/Dashboard";
+import TaskControls from "./components/TaskControls";
+import TaskItem from "./components/TaskItem";
+
+const CATEGORIES = ["All", "Work", "Personal", "Shopping", "Health", "Other"];
 
 const TodoList = () => {
-  // Initialize state from localStorage
+  // --- State ---
   const [tasks, setTasks] = useState(() => {
     const saved = localStorage.getItem("tasks");
     if (saved) {
@@ -23,17 +20,24 @@ const TodoList = () => {
   });
 
   const [newTask, setNewTask] = useState("");
-  
+  const [newCategory, setNewCategory] = useState("Work");
+  const [newDueDate, setNewDueDate] = useState("");
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("theme") === "dark";
   });
 
-  // Sync tasks to localStorage
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategory, setFilterCategory] = useState("All");
+  
+  // Editing State
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState("");
+
+  // --- Effects ---
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
 
-  // Sync theme to body class and localStorage
   useEffect(() => {
     if (darkMode) {
       document.body.classList.add("dark-mode");
@@ -46,133 +50,122 @@ const TodoList = () => {
     }
   }, [darkMode]);
 
-  const handleInputChange = (event) => {
-    setNewTask(event.target.value);
-  };
-
+  // --- Handlers ---
   const addTask = () => {
     if (newTask.trim() !== "") {
       const taskObj = {
         id: crypto.randomUUID(),
         text: newTask,
-        completed: false
+        completed: false,
+        category: newCategory,
+        dueDate: newDueDate || null,
+        createdAt: new Date().toISOString()
       };
-      setTasks((prevTasks) => [...prevTasks, taskObj]);
+      setTasks((prev) => [taskObj, ...prev]);
       setNewTask("");
-    }
-  };
-
-  const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
-      addTask();
+      setNewDueDate("");
     }
   };
 
   const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
-  };
-
-  const moveTaskUp = (index) => {
-    if (index > 0) {
-      const updatedTasks = [...tasks];
-      [updatedTasks[index], updatedTasks[index - 1]] = [
-        updatedTasks[index - 1],
-        updatedTasks[index],
-      ];
-      setTasks(updatedTasks);
-    }
-  };
-
-  const moveTaskDown = (index) => {
-    if (index === tasks.length - 1) return;
-    const updatedTasks = [...tasks];
-    [updatedTasks[index + 1], updatedTasks[index]] = [
-      updatedTasks[index],
-      updatedTasks[index + 1],
-    ];
-    setTasks(updatedTasks);
+    setTasks(tasks.filter((t) => t.id !== id));
   };
 
   const toggleComplete = (id) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
+    setTasks(tasks.map(t => 
+      t.id === id ? { ...t, completed: !t.completed } : t
     ));
+  };
+
+  const startEditing = (task) => {
+    setEditingId(task.id);
+    setEditText(task.text);
+  };
+
+  const saveEdit = () => {
+    setTasks(tasks.map(t => 
+      t.id === editingId ? { ...t, text: editText } : t
+    ));
+    setEditingId(null);
+  };
+
+  const moveTask = (index, direction) => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= tasks.length) return;
+    
+    const updated = [...tasks];
+    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    setTasks(updated);
+  };
+
+  // --- Filtered Tasks & Stats ---
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(task => {
+      const matchesSearch = task.text.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = filterCategory === "All" || task.category === filterCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [tasks, searchQuery, filterCategory]);
+
+  const stats = useMemo(() => {
+    const total = tasks.length;
+    const completed = tasks.filter(t => t.completed).length;
+    const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+    return { total, completed, percent };
+  }, [tasks]);
+
+  // --- Render Helpers ---
+  const formatDate = (dateStr) => {
+    if (!dateStr) return null;
+    return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   };
 
   return (
     <main className="to-do-list">
-      <div className="toggle-container">
-        <button 
-          className="toggle-btn" 
-          onClick={() => setDarkMode(!darkMode)}
-          title="Toggle Theme"
-        >
-          {darkMode ? <SunIcon className="icon" /> : <MoonIcon className="icon" />}
-        </button>
-      </div>
+      <Dashboard 
+        stats={stats} 
+        darkMode={darkMode} 
+        setDarkMode={setDarkMode} 
+      />
 
-      <h1>Today's Tasks</h1>
-
-      <section>
-        <input
-          type="text"
-          value={newTask}
-          placeholder="What needs to be done?"
-          onChange={handleInputChange}
-          onKeyDown={handleKeyPress}
-          autoFocus
-        />
-        <button className="add-btn" onClick={addTask}>
-          Add
-        </button>
-      </section>
+      <TaskControls 
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        newTask={newTask}
+        setNewTask={setNewTask}
+        newCategory={newCategory}
+        setNewCategory={setNewCategory}
+        newDueDate={newDueDate}
+        setNewDueDate={setNewDueDate}
+        addTask={addTask}
+        categories={CATEGORIES}
+        filterCategory={filterCategory}
+        setFilterCategory={setFilterCategory}
+      />
 
       <ol>
-        {tasks.map((task, index) => (
-          <li key={task.id}>
-            <button 
-              className={`icon-btn ${task.completed ? 'completed-btn' : ''}`}
-              onClick={() => toggleComplete(task.id)}
-            >
-              <CheckCircleIcon className={`icon ${task.completed ? 'text-green-500' : ''}`} />
-            </button>
-
-            <span 
-              className={`text ${task.completed ? "completed" : ""}`}
-              onClick={() => toggleComplete(task.id)}
-            >
-              {task.text}
-            </span>
-
-            <div style={{ display: 'flex', gap: '4px' }}>
-              <button 
-                className="icon-btn" 
-                onClick={() => moveTaskUp(index)}
-                disabled={index === 0}
-                style={{ opacity: index === 0 ? 0.3 : 1 }}
-              >
-                <ChevronUpIcon className="icon" />
-              </button>
-
-              <button 
-                className="icon-btn" 
-                onClick={() => moveTaskDown(index)}
-                disabled={index === tasks.length - 1}
-                style={{ opacity: index === tasks.length - 1 ? 0.3 : 1 }}
-              >
-                <ChevronDownIcon className="icon" />
-              </button>
-
-              <button className="icon-btn delete" onClick={() => deleteTask(task.id)}>
-                <TrashIcon className="icon" />
-              </button>
-            </div>
-          </li>
+        {filteredTasks.map((task, index) => (
+          <TaskItem 
+            key={task.id}
+            task={task}
+            index={index}
+            editingId={editingId}
+            editText={editText}
+            setEditText={setEditText}
+            startEditing={startEditing}
+            saveEdit={saveEdit}
+            setEditingId={setEditingId}
+            toggleComplete={toggleComplete}
+            moveTask={moveTask}
+            deleteTask={deleteTask}
+            formatDate={formatDate}
+            filteredTasksLength={filteredTasks.length}
+          />
         ))}
-        {tasks.length === 0 && (
-          <p style={{ textAlign: 'center', opacity: 0.5, marginTop: '20px' }}>
-            No tasks yet. Add one above!
-          </p>
+        {filteredTasks.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.5 }}>
+            <p>No tasks found.</p>
+          </div>
         )}
       </ol>
     </main>
