@@ -56,6 +56,7 @@ const TaskControls = ({
           value={newDueDate}
           onChange={(e) => setNewDueDate(e.target.value)}
           aria-label="Task due date"
+          data-placeholder="dd/mm/yyyy"
         />
         <button className="add-btn" onClick={addTask}>Add</button>
       </div>

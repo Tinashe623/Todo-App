@@ -105,6 +105,33 @@ select.cat-select {
   padding: 12px 16px;
   border-radius: 14px;
   border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: inherit;
+  position: relative;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dark-mode .add-section input[type="date"] {
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--text-dark);
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.add-section input[type="date"]::before {
+  content: attr(data-placeholder);
+  color: #94a3b8;
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.add-section input[type="date"]:focus::before,
+.add-section input[type="date"]:not([value=""])::before {
+  content: "";
+  display: none;
 }
 
 .add-btn {
@@ -228,7 +255,13 @@ select.cat-select {
   }
 
   .cat-select, .add-section input[type="date"] {
-    padding: 10px;
+    padding: 12px;
+    font-size: 0.9rem;
+    height: 48px; /* Consistent height */
+  }
+
+  .add-section input[type="date"]::before {
+    left: 12px;
     font-size: 0.85rem;
   }
 
