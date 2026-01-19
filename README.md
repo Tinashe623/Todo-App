@@ -1,13 +1,13 @@
 # 📝 Premium React To-Do List App
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=netlify)](https://premium-todo-app.netlify.app/)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=vercel)](https://tinashe-todo-app.vercel.app/)
 
 A modern, highly functional, and visually stunning To-Do List application built with **React 19**. This project was designed to showcase premium UI/UX principles, modular architecture, and advanced task management features, making it a perfect addition to a professional portfolio.
 
 ---
 
 ## 🔗 Live Demo
-Check out the live application here: **[premium-todo-app.netlify.app](https://premium-todo-app.netlify.app/)**
+Check out the live application here: **[tinashe-todo-app.vercel.app](https://tinashe-todo-app.vercel.app/)**
 
 ---
 
